@@ -47,6 +47,7 @@ if uploaded_file:
                 gevonden = "Ja"
 
                 numbers = re.findall(r"\d[\d\.,]*", line)
+                st.write(item, "|", line, "|", numbers)
                 if numbers:
                     waarde = numbers[-1]
 
