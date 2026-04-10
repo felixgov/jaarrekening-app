@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import pdfplumber
 
 st.title("Jaarrekening Extractor v1")
 
@@ -25,15 +26,29 @@ schema = [
     "Belastingen"
 ]
 
+
 if uploaded_file:
     st.success("PDF geüpload")
 
-    # placeholder output (v1)
+    import pdfplumber
+
+    text = ""
+
+    with pdfplumber.open(uploaded_file) as pdf:
+        for page in pdf.pages:
+            text += page.extract_text() or ""
+
     data = []
+
     for item in schema:
+        if item.lower() in text.lower():
+            gevonden = "Ja"
+        else:
+            gevonden = "Nee"
+
         data.append({
             "Post": item,
-            "Gevonden": "Nee",
+            "Gevonden": gevonden,
             "Waarde huidig jaar": "",
             "Waarde vorig jaar": ""
         })
