@@ -25,6 +25,37 @@ schema = [
     "Belastingen"
 ]
 
+def classify_tokens(line):
+    import re
+
+    tokens = line.split()
+
+    codes = []
+    words = []
+    amounts = []
+
+    for token in tokens:
+        t = token.strip()
+
+        # bedrag: minstens 1 duizendtalseparator of decimalen in financieel formaat
+        if re.fullmatch(r"\d{1,3}(?:\.\d{3})+(?:,\d+)?", t):
+            amounts.append(t)
+
+        # code / rekeningnummer: korte numerieke code of vorm zoals 10/15 of 6.9
+        elif re.fullmatch(r"\d+(?:[./]\d+)+", t) or re.fullmatch(r"\d{1,3}", t):
+            codes.append(t)
+
+        else:
+            words.append(t)
+
+    label = " ".join(words)
+
+    return {
+        "codes": codes,
+        "label": label,
+        "amounts": amounts
+    }
+
 if uploaded_file:
     st.success("PDF geüpload")
 
