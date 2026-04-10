@@ -26,8 +26,6 @@ schema = [
 ]
 
 def classify_tokens(line):
-    import re
-
     tokens = line.split()
 
     codes = []
@@ -37,14 +35,10 @@ def classify_tokens(line):
     for token in tokens:
         t = token.strip()
 
-        # bedrag: minstens 1 duizendtalseparator of decimalen in financieel formaat
         if re.fullmatch(r"\d{1,3}(?:\.\d{3})+(?:,\d+)?", t):
             amounts.append(t)
-
-        # code / rekeningnummer: korte numerieke code of vorm zoals 10/15 of 6.9
         elif re.fullmatch(r"\d+(?:[./]\d+)+", t) or re.fullmatch(r"\d{1,3}", t):
             codes.append(t)
-
         else:
             words.append(t)
 
@@ -71,24 +65,32 @@ if uploaded_file:
 
     for item in schema:
         gevonden = "Nee"
-        waarde = ""
+        huidig = ""
+        vorig = ""
 
         for line in lines:
             if item.lower() in line.lower():
                 gevonden = "Ja"
 
-                numbers = re.findall(r"\d[\d\.,]*", line)
-                st.write(item, "|", line, "|", numbers)
-                if numbers:
-                    waarde = numbers[-1]
+                parsed = classify_tokens(line)
+                st.write(item, "|", parsed)
+
+                amounts = parsed["amounts"]
+
+                if len(amounts) >= 2:
+                    huidig = amounts[0]
+                    vorig = amounts[1]
+                elif len(amounts) == 1:
+                    huidig = amounts[0]
+                    vorig = ""
 
                 break
 
         data.append({
             "Post": item,
             "Gevonden": gevonden,
-            "Waarde huidig jaar": waarde,
-            "Waarde vorig jaar": ""
+            "Waarde huidig jaar": huidig,
+            "Waarde vorig jaar": vorig
         })
 
     df = pd.DataFrame(data)
